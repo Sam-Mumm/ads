@@ -1,0 +1,159 @@
+import java.util.Random;
+/**
+ * Implementierung des Miller Rabin Tests
+ * @author Dan Steffen
+ * @version 0.1
+ */
+public class MillerRabin
+{
+	Random r = new Random();
+	
+	/**
+	 * Überprüft ob eine Zahl prim ist 
+	 * @param n - zu überprüfenden Zahl
+	 * @param s - Anzahl der Iterationen in denen geprüft werden soll
+	 * @return liefert true falls die Zahl möglicherweise prim ist und false sonst
+	 */
+	public boolean test(long n, int s)
+	{
+		long a=2;
+		
+		if(n%2==0)
+		{
+			return false;
+		}
+		
+		for(int i=1; i<=s; i++)
+		{
+			a=(long)r.nextInt((int)n-2)+2;
+;			
+			if(witness(n, 2)==true)
+			{
+				return false;			// Die Zahl n ist zu 100% nicht prim
+			}
+		}
+		
+		return true;			// Die Zahl n ist zu ((1/2)^s*100)% prim
+	}
+	
+	/**
+	 * Überprüft ob ein Zeuge (=Teiler) für die Zahl existiert 
+	 * @param n - Mögliche Primzahl
+	 * @param a - Zu überprüfende Zeuge
+	 * @return liefert true falls a ein Zeuge ist und sonst false
+	 */
+	private boolean witness(double n, double a)
+	{
+		String n_bin="";			// Zahl n in binärdarstellung
+		double u=0;		
+		int t=0;					// Anzahl der "abschließenden" Nullen
+		double x0=0;
+		double x1=0;
+		int potenz=1;
+		
+		// Falls n gerade ist
+		n_bin=dec2bin(n-1);
+			
+		// Zählen der Nullen von rechts nach links bis zur ersten Eins
+		for(int i=n_bin.length()-1; i>=0; i--)
+		{
+			if(u==0 && n_bin.charAt(i)=='0')
+			{
+				t++;
+			}
+				
+			if(u!=0 && n_bin.charAt(i)=='0')
+			{
+				potenz=potenz*2;
+			}
+			
+			if(n_bin.charAt(i)=='1')
+			{
+				u=u+potenz;
+				potenz=potenz*2;				
+			}
+		}
+						
+		// Berechnen von a^u mod n
+		x0=modular_exp(a, u, n);
+			
+		for(int i=1; i<=t; i++)
+		{
+			x1=(x0*x0)%n;
+				
+			if(x1==1 && x0 != 1 && x0 != (n-1))
+			{
+				return true;
+			}
+			x0=x1;
+		}
+			
+		if(x0!=1)
+		{
+			return true; 
+		}
+		else
+		{
+			return false;
+		}
+		
+	}
+	
+	/**
+	 * Umrechnung von der Dezimal in die Binärdarstellung 
+	 * @param dec - Dezimalzahl die konvertiert werden soll
+	 * @return Binärdarstellung einer Dezimalzahl
+	 */
+	private String dec2bin(double dec)
+	{
+		String bin="";
+		
+		while(dec!=0)
+		{
+			if(dec%2==1)
+			{
+				dec--;
+				bin="1"+bin;
+			}
+			else
+			{
+				bin="0"+bin;				
+			}
+			dec=dec/2;
+		}
+		return bin;
+	}
+		
+	/**
+	 * Berechnet (a^u) mod n
+	 * @param a - Mantisse
+	 * @param u - Exponent
+	 * @param n - Divisor für die Modulo Division
+	 * @return
+	 */
+	private double modular_exp(double a, double u, double n)
+	{
+		double result=1;
+		
+		if(a > 0 && u==0)
+		{
+			return 1;
+		}
+		
+		while(u>0)
+		{
+			if(u%2==0)
+			{
+				u=u/2;
+				a=a*a;
+			}
+			else
+			{
+				u--;
+				result=result*a;
+			}
+		}
+		result=result%n;
+		return result;
+	}
+}
